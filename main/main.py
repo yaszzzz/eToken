@@ -8,29 +8,64 @@ def main():
     from models.voucher import Voucher
     from models.transaction_manager import TransactionManager
 
-    user1 = User(1, "Aditya Putra", "aditya@example.com")
+    # Daftar pengguna dan objek pengguna aktif
+    users = []
+    active_user = None
 
+    # Membuat objek Voucher
     voucher1 = Voucher(101, "Telkomsel", "100.000", 95000)
     voucher2 = Voucher(102, "Indosat", "50.000", 48000)
     voucher3 = Voucher(103, "XL", "60.000", 58000)
 
+    # Membuat objek TransactionManager
     transaction_manager = TransactionManager()
 
-    # Menu loop
     while True:
         print("\n=== Menu ===")
-        print("1. Buat Pesanan Baru")
-        print("2. Tampilkan Semua Pesanan")
-        print("3. Tampilkan Informasi Pengguna")
-        print("4. Keluar")
-        choice = input("Pilih opsi (1-4): ")
+        print("1. Buat Pengguna Baru")
+        print("2. Ganti Pengguna Aktif")
+        print("3. Buat Pesanan Baru")
+        print("4. Tampilkan Semua Pesanan")
+        print("5. Tampilkan Informasi Pengguna Aktif")
+        print("6. Keluar")
+        choice = input("Pilih opsi (1-6): ")
 
         if choice == "1":
+            print("\n=== Buat Pengguna Baru ===")
+            name = input("Masukkan nama: ")
+            email = input("Masukkan email: ")
+            user_id = len(users) + 1
+            new_user = User(user_id, name, email)
+            users.append(new_user)
+            print(f"Pengguna baru '{name}' berhasil dibuat!")
+        elif choice == "2":
+            print("\n=== Ganti Pengguna Aktif ===")
+            if not users:
+                print("Belum ada pengguna yang dibuat.")
+                continue
+            print("Daftar Pengguna:")
+            for idx, user in enumerate(users):
+                print(f"{idx + 1}. {user.display_user_info()}")
+            user_choice = input("Pilih pengguna (nomor): ")
+            try:
+                user_choice = int(user_choice)
+                if 1 <= user_choice <= len(users):
+                    active_user = users[user_choice - 1]
+                    print(f"Pengguna aktif sekarang: {active_user.name}")
+                else:
+                    print("Pilihan tidak valid.")
+            except ValueError:
+                print("Masukkan nomor yang valid.")
+        elif choice == "3":
+            if not active_user:
+                print("Silakan pilih pengguna aktif terlebih dahulu.")
+                continue
             print("\n=== Buat Pesanan Baru ===")
             print("Voucher yang tersedia:")
             print(f"1. {voucher1.display_voucher_info()}")
             print(f"2. {voucher2.display_voucher_info()}")
             print(f"3. {voucher3.display_voucher_info()}")
+            
             voucher_choice = input("Pilih voucher (1-3): ")
             if voucher_choice == "1":
                 selected_voucher = voucher1
@@ -44,18 +79,21 @@ def main():
             quantity = input("Masukkan jumlah: ")
             try:
                 quantity = int(quantity)
-                order_id = len(transaction_manager.orders) + 1  # ID otomatis
-                transaction_manager.create_order(order_id, user1, selected_voucher, quantity)
+                order_id = len(transaction_manager.orders) + 1
+                transaction_manager.create_order(order_id, active_user, selected_voucher, quantity)
                 print("Pesanan berhasil dibuat!")
             except ValueError:
                 print("Jumlah harus berupa angka.")
-        elif choice == "2":
+        elif choice == "4":
             print("\n=== Semua Pesanan ===")
             print(transaction_manager.display_all_orders())
-        elif choice == "3":
-            print("\n=== Informasi Pengguna ===")
-            print(user1.display_user_info())
-        elif choice == "4":
+        elif choice == "5":
+            if not active_user:
+                print("Belum ada pengguna aktif.")
+            else:
+                print("\n=== Informasi Pengguna Aktif ===")
+                print(active_user.display_user_info())
+        elif choice == "6":
             print("Terima kasih! Program selesai.")
             break
         else:
