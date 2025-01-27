@@ -34,8 +34,9 @@ def main():
             print("\n=== Buat Pengguna Baru ===")
             name = input("Masukkan nama: ")
             email = input("Masukkan email: ")
+            phone_number = input("Masukkan nomor telepon: ")
             user_id = len(users) + 1
-            new_user = User(user_id, name, email)
+            new_user = User(user_id, name, email, phone_number)
             users.append(new_user)
             print(f"Pengguna baru '{name}' berhasil dibuat!")
         elif choice == "2":
@@ -76,14 +77,22 @@ def main():
             else:
                 print("Pilihan voucher tidak valid.")
                 continue
+
             quantity = input("Masukkan jumlah: ")
             try:
                 quantity = int(quantity)
-                order_id = len(transaction_manager.orders) + 1
-                transaction_manager.create_order(order_id, active_user, selected_voucher, quantity)
-                print("Pesanan berhasil dibuat!")
             except ValueError:
                 print("Jumlah harus berupa angka.")
+                continue
+
+            promo_code = input("Masukkan kode promo (jika ada, tekan Enter untuk lanjut): ").strip()
+
+            order_id = len(transaction_manager.orders) + 1
+            transaction_manager.create_order(order_id, active_user, selected_voucher, quantity, promo_code)
+
+            print("Pesanan berhasil dibuat!")
+
+
         elif choice == "4":
             print("\n=== Semua Pesanan ===")
             print(transaction_manager.display_all_orders())
