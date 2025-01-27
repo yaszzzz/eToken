@@ -27,8 +27,10 @@ def main():
         print("3. Buat Pesanan Baru")
         print("4. Tampilkan Semua Pesanan")
         print("5. Tampilkan Informasi Pengguna Aktif")
-        print("6. Keluar")
-        choice = input("Pilih opsi (1-6): ")
+        print("6. Gunakan Kode Promo")
+        print("7. Keluar")
+
+        choice = input("Pilih opsi (1-7): ")
 
         if choice == "1":
             print("\n=== Buat Pengguna Baru ===")
@@ -39,6 +41,7 @@ def main():
             new_user = User(user_id, name, email, phone_number)
             users.append(new_user)
             print(f"Pengguna baru '{name}' berhasil dibuat!")
+            
         elif choice == "2":
             print("\n=== Ganti Pengguna Aktif ===")
             if not users:
@@ -57,6 +60,7 @@ def main():
                     print("Pilihan tidak valid.")
             except ValueError:
                 print("Masukkan nomor yang valid.")
+
         elif choice == "3":
             if not active_user:
                 print("Silakan pilih pengguna aktif terlebih dahulu.")
@@ -81,30 +85,62 @@ def main():
             quantity = input("Masukkan jumlah: ")
             try:
                 quantity = int(quantity)
+                order_id = len(transaction_manager.orders) + 1
+                transaction_manager.create_order(order_id, active_user, selected_voucher, quantity)
+                print(f"Pesanan dengan Order Id {order_id} berhasil dibuat!")
+
             except ValueError:
                 print("Jumlah harus berupa angka.")
-                continue
-
-            promo_code = input("Masukkan kode promo (jika ada, tekan Enter untuk lanjut): ").strip()
-
-            order_id = len(transaction_manager.orders) + 1
-            transaction_manager.create_order(order_id, active_user, selected_voucher, quantity, promo_code)
-
-            print("Pesanan berhasil dibuat!")
 
 
         elif choice == "4":
             print("\n=== Semua Pesanan ===")
             print(transaction_manager.display_all_orders())
+
         elif choice == "5":
             if not active_user:
                 print("Belum ada pengguna aktif.")
             else:
                 print("\n=== Informasi Pengguna Aktif ===")
                 print(active_user.display_user_info())
+
         elif choice == "6":
+            print("\n=== Gunakan Kode Promo ===")
+            if not transaction_manager.orders:
+                print("Belum ada pesanan yang dibuat.")
+                continue
+
+            order_id = input("Masukkan Order ID: ")
+            try:
+                order_id = int(order_id)
+            except ValueError:
+                print("Order ID harus berupa angka.")
+                continue
+
+            # Cari pesanan berdasarkan Order ID
+            selected_order = None
+            for order in transaction_manager.orders:
+                if order.order_id == order_id:
+                    selected_order = order
+                    break
+
+            if not selected_order:
+                print("Order ID tidak ditemukan.")
+                continue
+
+            promo_code = input("Masukkan kode promo: ").strip()
+
+            # Terapkan diskon jika kode valid
+            if promo_code in transaction_manager.promos:
+                promo = transaction_manager.promos[promo_code]
+                selected_order.total_price = promo.apply_discount(selected_order.total_price)
+                print(f"Kode promo '{promo_code}' diterapkan! Total harga setelah diskon: {selected_order.total_price}")
+            else:
+                print("Kode promo tidak valid atau sudah kadaluarsa.")
+        elif choice == "7":
             print("Terima kasih! Program selesai.")
             break
+
         else:
             print("Pilihan tidak valid. Silakan coba lagi.")
 
