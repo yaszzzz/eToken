@@ -24,9 +24,10 @@ def main():
     transaction_manager = TransactionManager()
 
     tokens = [
-        TokenPLN(201, "20.000", 20000),
-        TokenPLN(202, "50.000", 50000),
-        TokenPLN(203, "100.000", 100000)
+        TokenPLN("TOKEN20", 20, 22000),
+        TokenPLN("TOKEN50", 50, 54000),
+        TokenPLN("TOKEN100", 100, 107000),
+        TokenPLN("TOKEN200", 200, 212000)
     ]
 
     games = [
@@ -72,6 +73,98 @@ def main():
         except ValueError:
             print("Jumlah harus berupa angka.")
 
+    def display_token_menu(active_user):   #display menu token PLN punya ilyas
+        while True:
+            print("\n" + "="*40)
+            print("=== MENU PEMBELIAN TOKEN PLN ===")
+            print("="*40)
+            
+            if not active_user:
+                print("Silakan pilih pengguna aktif terlebih dahulu.")
+                return
+            
+            print("\nMenu:")
+            print("1. Lihat Daftar Token")
+            print("2. Beli Token")
+            print("3. Riwayat Pemesanan")
+            print("0. Kembali ke Menu Utama")
+            
+            menu_choice = input("\nPilih menu (0-3): ")
+            
+            if menu_choice == "0":
+                break
+                
+            elif menu_choice == "1":
+                # Tampilkan daftar token
+                print("\nDaftar Token PLN yang Tersedia:")
+                for idx, token in enumerate(tokens, start=1):
+                    print(f"\nToken {idx}:")
+                    print(token.display_token_info())
+                input("\nTekan Enter untuk kembali ke menu...")
+                
+            elif menu_choice == "2":
+                # Tampilkan daftar token dulu
+                print("\nDaftar Token PLN yang Tersedia:")
+                for idx, token in enumerate(tokens, start=1):
+                    print(f"\nToken {idx}:")
+                    print(token.display_token_info())
+                    
+                try:
+                    # Pilih token
+                    token_choice = int(input("\nPilih token PLN (nomor): "))
+                    if token_choice < 1 or token_choice > len(tokens):
+                        raise ValueError("Nomor token tidak valid")
+                    
+                    selected_token = tokens[token_choice - 1]
+                    
+                    # Input jumlah
+                    quantity = input("Masukkan jumlah token yang ingin dibeli: ")
+                    
+                    # Proses pembelian
+                    order = TokenPLN.create_order(selected_token, quantity, active_user.name)
+                    
+                    if order:
+                        # Tambahkan ke riwayat pemesanan
+                        if not hasattr(active_user, 'token_history'):
+                            active_user.token_history = []
+                        active_user.token_history.append(order)
+                        input("\nTekan Enter untuk kembali ke menu...")
+                    
+                except ValueError as e:
+                    print(f"\nError: {str(e)}")
+                    input("\nTekan Enter untuk mencoba lagi...")
+                except IndexError:
+                    print("\nError: Pilihan token tidak valid")
+                    input("\nTekan Enter untuk mencoba lagi...")
+                    
+            elif menu_choice == "3":
+                # Tampilkan riwayat pemesanan
+                if not hasattr(active_user, 'token_history') or not active_user.token_history:
+                    print("\nBelum ada riwayat pemesanan token.")
+                else:
+                    print("\n" + "="*50)
+                    print("RIWAYAT PEMESANAN TOKEN PLN")
+                    print("="*50)
+                    
+                    for idx, order in enumerate(active_user.token_history, 1):
+                        print(f"\nPemesanan #{idx}")
+                        print(f"Tanggal: {order['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
+                        print(f"Username: {order['username']}")
+                        print(f"Order ID: {order['order_id']}")
+                        print(f"Denominasi: {order['denomination']} kWh")
+                        print(f"Jumlah: {order['quantity']}")
+                        print(f"Total Harga: Rp{order['total_price']:,}")
+                        print(f"Token:")
+                        for i, token in enumerate(order['tokens'], 1):
+                            print(f"  {i}. {token}")
+                        print("-"*50)
+                        
+                input("\nTekan Enter untuk kembali ke menu...")
+                
+            else:
+                print("\nPilihan menu tidak valid")
+                input("Tekan Enter untuk mencoba lagi...")
+    
     def display_menu():
         print("\n=== Menu ===")
         print("1. Buat Pengguna Baru")
@@ -154,21 +247,8 @@ def main():
                 print("Kode promo tidak valid atau sudah digunakan.")
 
         elif choice == "7":
-            print("\n=== Token PLN ===")
-            if not active_user:
-                print("Silakan pilih pengguna aktif terlebih dahulu.")
-                continue
-            print("Daftar Token PLN:")
-            for idx, token in enumerate(tokens, start=1):
-                print(f"{idx}. {token.display_token_info()}")
-            try:
-                token_choice = int(input("Pilih token PLN (nomor): "))
-                selected_token = tokens[token_choice - 1]
-                quantity = input("Masukkan jumlah: ")
-                create_order(selected_token, quantity)
-            except (IndexError, ValueError):
-                print("Pilihan token tidak valid.")
-
+             display_token_menu(active_user)
+             
         elif choice == "8":
             print("\n=== Top-Up Game ===")
             if not active_user:
